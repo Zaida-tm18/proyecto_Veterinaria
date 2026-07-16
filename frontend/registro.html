@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crear cuenta - Veterinaria Jenny's</title>
+<link rel="stylesheet" href="assets/css/styles.css">
+<style>
+  .login-wrap{min-height:100vh;display:grid;place-items:center;padding:24px}
+  .login-card{max-width:420px;width:100%}
+  .login-card .logo{border-bottom:0;margin-bottom:10px;padding-bottom:0}
+  .login-error{background:var(--danger-bg);color:#b91c1c;border-radius:12px;padding:12px;margin-bottom:14px;display:none}
+  .login-error.show{display:block}
+  .field{margin-bottom:16px}
+</style>
+</head>
+<body>
+  <div class="login-wrap">
+    <section class="card login-card">
+      <div class="logo">
+        <strong>Veterinaria Jenny's</strong>
+        <span class="muted">Crea tu cuenta de dueño de mascota</span>
+      </div>
+
+      <div class="login-error" id="regError"></div>
+
+      <form id="regForm">
+        <div class="field">
+          <label for="nombre">Nombre completo</label>
+          <input id="nombre" name="nombre" type="text" required>
+        </div>
+        <div class="field">
+          <label for="correo">Correo electrónico</label>
+          <input id="correo" name="correo" type="email" required autocomplete="username">
+        </div>
+        <div class="field">
+          <label for="telefono">Teléfono</label>
+          <input id="telefono" name="telefono" type="text">
+        </div>
+        <div class="field">
+          <label for="password">Contraseña</label>
+          <input id="password" name="password" type="password" required minlength="6" autocomplete="new-password">
+          <small>Mínimo 6 caracteres.</small>
+        </div>
+        <button class="btn primary" type="submit" style="width:100%;justify-content:center">Crear cuenta</button>
+      </form>
+
+      <p class="muted" style="text-align:center;margin-top:14px">
+        ¿Ya tienes cuenta? <a href="login.html">Inicia sesión</a>
+      </p>
+    </section>
+  </div>
+
+  <script src="assets/js/api.js"></script>
+  <script>
+    if (getToken() && getUsuario()) {
+      window.location.href = 'index.html';
+    }
+    enablePasswordToggles();
+
+    document.querySelector('#regForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(e.target).entries());
+      const errorBox = document.querySelector('#regError');
+      errorBox.classList.remove('show');
+
+      try {
+        const { token, usuario } = await api.registro(data);
+        setSesion(token, usuario);
+        window.location.href = 'index.html';
+      } catch (err) {
+        errorBox.textContent = err.message || 'No se pudo crear la cuenta.';
+        errorBox.classList.add('show');
+      }
+    });
+  </script>
+</body>
+</html>

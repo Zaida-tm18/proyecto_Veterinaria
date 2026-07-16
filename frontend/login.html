@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Iniciar sesión - Veterinaria Jenny's</title>
+<link rel="stylesheet" href="assets/css/styles.css">
+<style>
+  .login-wrap{min-height:100vh;display:grid;place-items:center;padding:24px}
+  .login-card{max-width:420px;width:100%}
+  .login-card .logo{border-bottom:0;margin-bottom:10px;padding-bottom:0}
+  .login-error{background:var(--danger-bg);color:#b91c1c;border-radius:12px;padding:12px;margin-bottom:14px;display:none}
+  .login-error.show{display:block}
+  .field{margin-bottom:16px}
+  .demo-box{margin-top:18px;font-size:.85rem;color:var(--muted);background:#f8fafc;border:1px solid var(--border);border-radius:12px;padding:12px}
+</style>
+</head>
+<body>
+  <div class="login-wrap">
+    <section class="card login-card">
+      <div class="logo">
+        <strong>Veterinaria Jenny's</strong>
+        <span class="muted">Inicia sesión para continuar</span>
+      </div>
+
+      <div class="login-error" id="loginError"></div>
+
+      <form id="loginForm">
+        <div class="field">
+          <label for="correo">Correo electrónico</label>
+          <input id="correo" name="correo" type="email" required autocomplete="username">
+        </div>
+        <div class="field">
+          <label for="password">Contraseña</label>
+          <input id="password" name="password" type="password" required autocomplete="current-password">
+        </div>
+        <button class="btn primary" type="submit" style="width:100%;justify-content:center">Ingresar</button>
+      </form>
+
+      <p class="muted" style="text-align:center;margin-top:14px">
+        ¿Eres dueño de una mascota y aún no tienes cuenta?
+        <a href="registro.html">Regístrate aquí</a>
+      </p>
+
+      <div class="demo-box">
+        Usuarios de prueba (contraseña <b>123456</b> para todos):<br>
+        admin@veterinariajenny.com · jenny@veterinariajenny.com (veterinario) · recepcion@veterinariajenny.com · carlos@example.com (dueño de mascota)
+      </div>
+    </section>
+  </div>
+
+  <script src="assets/js/api.js"></script>
+  <script>
+    // Si ya hay sesión activa, no tiene sentido mostrar el login de nuevo.
+    if (getToken() && getUsuario()) {
+      window.location.href = 'index.html';
+    }
+    enablePasswordToggles();
+
+    document.querySelector('#loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const correo = document.querySelector('#correo').value.trim();
+      const password = document.querySelector('#password').value;
+      const errorBox = document.querySelector('#loginError');
+      errorBox.classList.remove('show');
+
+      try {
+        const { token, usuario } = await api.login(correo, password);
+        setSesion(token, usuario);
+        window.location.href = 'index.html';
+      } catch (err) {
+        errorBox.textContent = err.message || 'No se pudo iniciar sesión.';
+        errorBox.classList.add('show');
+      }
+    });
+  </script>
+</body>
+</html>
