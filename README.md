@@ -33,6 +33,12 @@ Esto crea todas las tablas y 6 usuarios de prueba, todos con la contraseña **`1
 | carlos@example.com                   | dueño de mascota |
 | maria@example.com                    | dueño de mascota |
 
+CORREGIR TILDES EN LA BD 
+chcp 65001
+$env:PGCLIENTENCODING="UTF8"
+psql -U postgres -d veterinaria -f backend/sql/schema.sql
+
+
 ## 2. Configurar y levantar el backend
 
 ```bash
