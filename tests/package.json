@@ -1,0 +1,15 @@
+{
+  "name": "proyecto-veterinaria-playwright",
+  "version": "1.0.0",
+  "description": "Casos de prueba de V&V de software con Playwright",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui",
+    "report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.1",
+    "@types/node": "^26.4.0"
+  }
+}
