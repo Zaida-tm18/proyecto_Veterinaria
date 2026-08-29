@@ -131,4 +131,51 @@ const api = {
     crear: (data) => apiFetch('/usuarios', { method: 'POST', body: JSON.stringify(data) }),
     actualizar: (id, data) => apiFetch(`/usuarios/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   },
+  configuracion: {
+    obtener: () => apiFetch('/configuracion'),
+    actualizar: (data) => apiFetch('/configuracion', { method: 'PUT', body: JSON.stringify(data) }),
+  },
 };
+
+// ------------------------------------------------------------------
+// Branding de la clínica (nombre + logo), usado en TODAS las páginas
+// (incluidas login.html y registro.html, que no tienen sesión).
+// Estrategia: pintar de inmediato con lo que haya en caché local (para
+// que no "parpadee" el nombre por defecto) y luego refrescar desde la
+// API por si el admin lo cambió recientemente.
+// ------------------------------------------------------------------
+const CLINICA_POR_DEFECTO = { nombre_clinica: "Veterinaria Jenny's", logo_data: null, direccion: '', telefono: '', correo_contacto: '' };
+
+function getClinicaCache() {
+  try {
+    const raw = localStorage.getItem('clinica');
+    return raw ? Object.assign({}, CLINICA_POR_DEFECTO, JSON.parse(raw)) : CLINICA_POR_DEFECTO;
+  } catch (_) { return CLINICA_POR_DEFECTO; }
+}
+
+// Aplica los datos de la clínica a cualquier elemento marcado con los
+// atributos data-clinica-* presentes en la página actual.
+function aplicarClinica(cfg) {
+  document.querySelectorAll('[data-clinica-nombre]').forEach((el) => { el.textContent = cfg.nombre_clinica; });
+  document.querySelectorAll('[data-clinica-logo]').forEach((img) => {
+    if (cfg.logo_data) { img.src = cfg.logo_data; img.style.display = ''; }
+    else { img.removeAttribute('src'); img.style.display = 'none'; }
+  });
+  if (document.title.includes("Veterinaria Jenny's") && cfg.nombre_clinica !== "Veterinaria Jenny's") {
+    document.title = document.title.replace("Veterinaria Jenny's", cfg.nombre_clinica);
+  }
+}
+
+// Se llama al final de cada página (después de pintar el layout/sidebar
+// o el formulario de login/registro) para refrescar el branding.
+async function cargarClinica() {
+  aplicarClinica(getClinicaCache()); // pintado inmediato con la caché
+  try {
+    const cfg = await api.configuracion.obtener();
+    localStorage.setItem('clinica', JSON.stringify(cfg));
+    aplicarClinica(cfg);
+    return cfg;
+  } catch (_) {
+    return getClinicaCache(); // sin backend disponible, seguimos con la caché
+  }
+}

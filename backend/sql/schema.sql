@@ -11,6 +11,7 @@ DROP TABLE IF EXISTS citas CASCADE;
 DROP TABLE IF EXISTS inventario CASCADE;
 DROP TABLE IF EXISTS mascotas CASCADE;
 DROP TABLE IF EXISTS usuarios CASCADE;
+DROP TABLE IF EXISTS configuracion CASCADE;
 DROP TYPE IF EXISTS rol_usuario;
 
 -- ------------------------------------------------------------
@@ -97,6 +98,26 @@ CREATE TABLE pagos (
     creado_en       TIMESTAMPTZ  NOT NULL DEFAULT now(),
     eliminado       BOOLEAN      NOT NULL DEFAULT false
 );
+
+-- ------------------------------------------------------------
+-- Configuración de la clínica
+-- Fila única (id fijo = 1) con los datos generales del negocio:
+-- nombre, logo (en base64), dirección, teléfono y correo de contacto.
+-- El admin la edita desde el módulo de Configuración.
+-- ------------------------------------------------------------
+DROP TABLE IF EXISTS configuracion CASCADE;
+CREATE TABLE configuracion (
+    id              INTEGER      PRIMARY KEY DEFAULT 1,
+    nombre_clinica  VARCHAR(150) NOT NULL DEFAULT 'Veterinaria Jenny''s',
+    logo_data       TEXT,                    -- imagen en base64 (data URL)
+    direccion       VARCHAR(200),
+    telefono        VARCHAR(30),
+    correo_contacto VARCHAR(150),
+    actualizado_en  TIMESTAMPTZ  NOT NULL DEFAULT now(),
+    CONSTRAINT configuracion_singleton CHECK (id = 1)
+);
+
+INSERT INTO configuracion (id, nombre_clinica) VALUES (1, 'Veterinaria Jenny''s');
 
 -- ------------------------------------------------------------
 -- Inventario (no depende de mascotas ni usuarios)

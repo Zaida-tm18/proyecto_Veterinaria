@@ -18,7 +18,8 @@
   <div class="login-wrap">
     <section class="card login-card">
       <div class="logo">
-        <strong>Veterinaria Jenny's</strong>
+        <img data-clinica-logo src="" alt="Logo" style="width:64px;height:64px;object-fit:contain;border-radius:12px;margin-bottom:8px;display:none">
+        <strong data-clinica-nombre>Veterinaria Jenny's</strong>
         <span class="muted">Crea tu cuenta de dueño de mascota</span>
       </div>
 
@@ -57,6 +58,7 @@
       window.location.href = 'index.html';
     }
     enablePasswordToggles();
+    cargarClinica();
 
     document.querySelector('#regForm').addEventListener('submit', async (e) => {
       e.preventDefault();
