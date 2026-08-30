@@ -7497,3 +7497,19 @@
  HTTP  29/8/2026 10:20:48 p. m. 127.0.0.1 Returned 304 in 2 ms
  HTTP  29/8/2026 10:20:48 p. m. 127.0.0.1 GET /assets/js/main.js
  HTTP  29/8/2026 10:20:48 p. m. 127.0.0.1 Returned 304 in 1 ms
+ HTTP  29/8/2026 11:39:54 p. m. 127.0.0.1 GET /registro.html
+ HTTP  29/8/2026 11:39:54 p. m. 127.0.0.1 Returned 200 in 13 ms
+ HTTP  29/8/2026 11:39:54 p. m. 127.0.0.1 GET /assets/css/styles.css
+ HTTP  29/8/2026 11:39:54 p. m. 127.0.0.1 GET /assets/js/api.js
+ HTTP  29/8/2026 11:39:54 p. m. 127.0.0.1 Returned 200 in 2 ms
+ HTTP  29/8/2026 11:39:54 p. m. 127.0.0.1 Returned 200 in 2 ms
+ HTTP  29/8/2026 11:39:55 p. m. 127.0.0.1 GET /favicon.ico
+ HTTP  29/8/2026 11:39:55 p. m. 127.0.0.1 Returned 404 in 2 ms
+ HTTP  29/8/2026 11:39:55 p. m. 127.0.0.1 GET /index.html
+ HTTP  29/8/2026 11:39:55 p. m. 127.0.0.1 Returned 200 in 4 ms
+ HTTP  29/8/2026 11:39:56 p. m. 127.0.0.1 GET /assets/css/styles.css
+ HTTP  29/8/2026 11:39:56 p. m. 127.0.0.1 Returned 304 in 0 ms
+ HTTP  29/8/2026 11:39:56 p. m. 127.0.0.1 GET /assets/js/api.js
+ HTTP  29/8/2026 11:39:56 p. m. 127.0.0.1 Returned 304 in 0 ms
+ HTTP  29/8/2026 11:39:56 p. m. 127.0.0.1 GET /assets/js/main.js
+ HTTP  29/8/2026 11:39:56 p. m. 127.0.0.1 Returned 200 in 1 ms

@@ -46,11 +46,11 @@ async function apiFetch(path, options = {}) {
   // token (sesión vencida/inválida). Si no hay token, el 401 es una
   // respuesta normal del endpoint (p. ej. login con credenciales
   // incorrectas) y debe manejarse como cualquier otro error de la API.
-  if (res.status === 401) {
+  if (res.status === 401 && token) {
     cerrarSesion();
     throw new Error('Sesión expirada.');
   }
-//&& token
+
   let data = null;
   try { data = await res.json(); } catch (_) { /* respuesta sin cuerpo */ }
 
