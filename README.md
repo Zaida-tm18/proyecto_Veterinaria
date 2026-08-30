@@ -75,17 +75,3 @@ npx serve .
 
 Abre `http://localhost:5500/login.html` e inicia sesión con cualquiera de los usuarios de la tabla de arriba.
 
-## 4. Qué se arregló respecto al prototipo original
-
-- **Botones "Ver" / "Editar"**: antes no hacían nada o no pasaban el `id` del registro. Ahora `main.js` pasa `?id=` en la URL y `forms.js` precarga los datos reales desde la API.
-- **"Guardar" no guardaba nada**: el prototipo solo simulaba el guardado con un `alert`. Ahora cada formulario hace `POST`/`PUT` real contra el backend, que inserta/actualiza en PostgreSQL.
-- **Datos hardcodeados en `data.js`**: eliminado. Todo viene de la base de datos vía `/api/...`.
-- **Sin login**: se agregó `login.html` + autenticación JWT + 4 roles (admin, veterinario, recepcionista, dueño de mascota), cada uno con permisos distintos (ver `backend/src/routes/*.routes.js` para el detalle de qué puede hacer cada rol).
-- **Eliminar**: ahora es un borrado lógico (columna `eliminado`), como ya sugería el modal original de "papelera de recuperación", pero real.
-
-## 5. Próximos pasos sugeridos
-
-- Cambiar `JWT_SECRET` en `.env` por una cadena aleatoria larga antes de usar esto en producción.
-- Si vas a desplegar, restringe `cors()` en `backend/src/server.js` al dominio real de tu frontend en vez de aceptar cualquier origen.
-- Si necesitas que un dueño de mascota pueda **registrarse solo** (ahora mismo los usuarios se crean directo en la base de datos), habría que agregar un endpoint `POST /api/auth/registro`.
-- Considera agregar recuperación de contraseña si este sistema va a usarse con clientes reales.
