@@ -1,4 +1,4 @@
-# Veterinaria Jenny's — Guía de instalación
+# Sistema de gestión veterinaria — Guía de instalación
 
 Este proyecto ahora tiene dos partes:
 
