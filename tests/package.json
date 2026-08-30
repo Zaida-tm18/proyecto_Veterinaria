@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Casos de prueba de V&V de software con Playwright",
   "scripts": {
+    "pretest": "npm install --prefix ../backend",
     "test": "playwright test",
     "test:headed": "playwright test --headed",
     "test:ui": "playwright test --ui",

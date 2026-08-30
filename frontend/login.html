@@ -24,18 +24,18 @@
         <span class="muted">Inicia sesión para continuar</span>
       </div>
 
-      <div class="login-error" id="loginError"></div>
+      <div class="login-error" id="loginError" data-testid="login-error"></div>
 
       <form id="loginForm">
         <div class="field">
           <label for="correo">Correo electrónico</label>
-          <input id="correo" name="correo" type="email" required autocomplete="username">
+          <input id="correo" name="correo" type="email" required autocomplete="username" data-testid="login-email-input">
         </div>
         <div class="field">
           <label for="password">Contraseña</label>
-          <input id="password" name="password" type="password" required autocomplete="current-password">
+          <input id="password" name="password" type="password" required autocomplete="current-password" data-testid="login-password-input">
         </div>
-        <button class="btn primary" type="submit" style="width:100%;justify-content:center">Ingresar</button>
+        <button class="btn primary" type="submit" style="width:100%;justify-content:center" data-testid="login-btn">Ingresar</button>
       </form>
 
       <p class="muted" style="text-align:center;margin-top:14px">

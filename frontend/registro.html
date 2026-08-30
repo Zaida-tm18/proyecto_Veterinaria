@@ -23,27 +23,27 @@
         <span class="muted">Crea tu cuenta de dueño de mascota</span>
       </div>
 
-      <div class="login-error" id="regError"></div>
+      <div class="login-error" id="regError" data-testid="registro-error"></div>
 
       <form id="regForm">
         <div class="field">
           <label for="nombre">Nombre completo</label>
-          <input id="nombre" name="nombre" type="text" required>
+          <input id="nombre" name="nombre" type="text" required data-testid="registro-nombre-input">
         </div>
         <div class="field">
           <label for="correo">Correo electrónico</label>
-          <input id="correo" name="correo" type="email" required autocomplete="username">
+          <input id="correo" name="correo" type="email" required autocomplete="username" data-testid="registro-correo-input">
         </div>
         <div class="field">
           <label for="telefono">Teléfono</label>
-          <input id="telefono" name="telefono" type="text">
+          <input id="telefono" name="telefono" type="text" data-testid="registro-telefono-input">
         </div>
         <div class="field">
           <label for="password">Contraseña</label>
-          <input id="password" name="password" type="password" required minlength="6" autocomplete="new-password">
+          <input id="password" name="password" type="password" required minlength="6" autocomplete="new-password" data-testid="registro-password-input">
           <small>Mínimo 6 caracteres.</small>
         </div>
-        <button class="btn primary" type="submit" style="width:100%;justify-content:center">Crear cuenta</button>
+        <button class="btn primary" type="submit" style="width:100%;justify-content:center" data-testid="registro-btn">Crear cuenta</button>
       </form>
 
       <p class="muted" style="text-align:center;margin-top:14px">

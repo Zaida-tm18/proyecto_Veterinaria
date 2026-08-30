@@ -42,12 +42,15 @@ async function apiFetch(path, options = {}) {
 
   const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
 
+  // Solo forzamos reingreso si el 401 vino de una petición que SÍ llevaba
+  // token (sesión vencida/inválida). Si no hay token, el 401 es una
+  // respuesta normal del endpoint (p. ej. login con credenciales
+  // incorrectas) y debe manejarse como cualquier otro error de la API.
   if (res.status === 401) {
-    // Token vencido o inválido: forzar reingreso.
     cerrarSesion();
     throw new Error('Sesión expirada.');
   }
-
+//&& token
   let data = null;
   try { data = await res.json(); } catch (_) { /* respuesta sin cuerpo */ }
 

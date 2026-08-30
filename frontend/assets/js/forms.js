@@ -1,4 +1,3 @@
-
 document.addEventListener('DOMContentLoaded', async () => {
   const page = document.body.dataset.form;
   if (!page) return;
@@ -116,7 +115,7 @@ async function buildFormPage(page) {
   document.body.insertAdjacentHTML('afterbegin', `<div class="layout">${sidebar(prefix)}<main class="content">
     <div class="topbar"><div><h1>${esEdicion ? 'Editar' : cfg.title}</h1><p>${cfg.subtitle}</p></div><div class="actions"><button class="btn ghost" onclick="history.back()">← Volver</button></div></div>
     <section class="card"><div class="hint">💡 ${cfg.help}</div><form id="normalForm"><div class="form-grid" id="formGrid"></div>
-      <div class="actions" style="margin-top:20px;justify-content:flex-end"><button type="button" class="btn ghost" onclick="history.back()">Cancelar</button><button class="btn success" type="submit">Guardar</button></div>
+      <div class="actions" style="margin-top:20px;justify-content:flex-end"><button type="button" class="btn ghost" onclick="history.back()">Cancelar</button><button class="btn success" type="submit" data-testid="form-submit-btn">Guardar</button></div>
     </form></section>
   </main></div>${commonModal()}`);
   markActiveNav(); setupHelp(); setupModal();

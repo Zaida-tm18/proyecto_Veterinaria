@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 function money(n) { return '$' + Number(n).toFixed(2); }
-function normalize(text) { return String(text || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
+function normalize(text) { return String(text || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); }
 function isLowStock(p) { return Number(p.cantidad) <= Number(p.minimo); }
 
 // ------------------------------------------------------------------
@@ -55,10 +55,10 @@ function paginationHtml(page, totalPages) {
     if (page < totalPages - 2) nums.push('…');
     nums.push(totalPages);
   }
-  const btn = (label, target, opts = {}) => `<button class="page-btn${opts.active ? ' active' : ''}" data-page="${target}" ${opts.disabled ? 'disabled' : ''}>${label}</button>`;
+  const btn = (label, target, opts = {}) => `<button class="page-btn${opts.active ? ' active' : ''}" ${opts.testid ? `data-testid="${opts.testid}"` : ''} data-page="${target}" ${opts.disabled ? 'disabled' : ''}>${label}</button>`;
   return `<div class="pagination">
     ${btn('‹', page - 1, { disabled: page === 1 })}
-    ${nums.map(n => n === '…' ? `<span class="page-dots">…</span>` : btn(n, n, { active: n === page })).join('')}
+    ${nums.map(n => n === '…' ? `<span class="page-dots">…</span>` : btn(n, n, { active: n === page, testid: `page-btn-${n}` })).join('')}
     ${btn('›', page + 1, { disabled: page === totalPages })}
   </div>`;
 }
@@ -151,7 +151,7 @@ function sidebar(prefix = '') {
     <details class="nav-group" open>
       <summary class="nav-link">👤 Usuarios <small>▾</small></summary>
       <a class="nav-link" data-page="usuarios" href="${prefix}pages/usuarios.html">👤 Usuarios</a>
-      <a class="nav-link" data-page="configuracion" href="${prefix}pages/configuracion.html">⚙️ Configuración de la clínica</a>
+      <a class="nav-link" data-testid="nav-configuracion" data-page="configuracion" href="${prefix}pages/configuracion.html">⚙️ Configuración de la clínica</a>
     </details>` : ''}
     <div class="nav-title">Sesión</div>
     <div style="padding:10px 12px;font-size:.85rem;color:var(--muted)">
@@ -162,7 +162,7 @@ function sidebar(prefix = '') {
 }
 function commonModal() {
   return `<div class="modal-backdrop" id="confirmModal">
-    <div class="modal"><h3 id="modalTitle">Confirmar acción</h3><p id="modalText" class="muted"></p><div class="actions" style="justify-content:flex-end"><button class="btn ghost" id="modalCancel">Cancelar</button><button class="btn danger" id="modalOk">Confirmar</button></div></div>
+    <div class="modal"><h3 id="modalTitle">Confirmar acción</h3><p id="modalText" class="muted"></p><div class="actions" style="justify-content:flex-end"><button class="btn ghost" id="modalCancel">Cancelar</button><button class="btn danger" id="modalOk" data-testid="modalOk">Confirmar</button></div></div>
   </div><button class="help-float" title="Ayuda contextual">?</button>`;
 }
 function layout(prefix, main) {
@@ -269,8 +269,8 @@ async function renderDashboard() {
 async function renderMascotas() {
   layout('../', `
     <div class="topbar"><div><h1>Gestión de Mascotas</h1><p>Administra el registro de mascotas y sus historiales clínicos.</p></div></div>
-    <div class="toolbar"><label class="search">🔎 <input id="q" placeholder="Buscar por mascota, dueño o especie..."></label><button class="btn primary" onclick="goTo('mascota-form.html')">+ Nueva Mascota</button></div>
-    <div class="table-wrap"><table><thead><tr><th>Nombre</th><th>Especie</th><th>Raza</th><th>Edad</th><th>Dueño</th><th>Teléfono</th><th>Acciones</th></tr></thead><tbody id="rows"></tbody></table></div>
+    <div class="toolbar"><label class="search">🔎 <input id="q" data-testid="mascotas-search-input" placeholder="Buscar por mascota, dueño o especie..."></label><button class="btn primary" data-testid="mascotas-new-btn" onclick="goTo('mascota-form.html')">+ Nueva Mascota</button></div>
+    <div class="table-wrap"><table><thead><tr><th>Nombre</th><th>Especie</th><th>Raza</th><th>Edad</th><th>Dueño</th><th>Teléfono</th><th>Acciones</th></tr></thead><tbody id="rows" data-testid="mascotas-rows"></tbody></table></div>
     <div class="pagination" id="pager"></div>`);
 
   let mascotas = await api.mascotas.listar();
@@ -410,8 +410,8 @@ async function renderPagos() {
 
   layout('../', `
     <div class="topbar"><div><h1>Gestión de Pagos</h1><p>Control financiero y registro de transacciones de caja.</p></div></div>
-    <div class="grid three" style="margin-bottom:20px"><div class="card kpi success"><div class="kpi-icon">💵</div><div><p>Ingresos Totales</p><strong>${money(ingresos)}</strong></div></div><div class="card kpi warning"><div class="kpi-icon">💰</div><div><p>Pagos Pendientes</p><strong>${money(pendientes)}</strong></div></div><div class="card kpi"><div class="kpi-icon">#</div><div><p>Número de Transacciones</p><strong>${pagos.length}</strong></div></div></div>
-    <div class="toolbar"><label class="search">🔎 <input id="q" placeholder="Buscar por mascota, dueño o concepto..."></label><select id="estado"><option>Todos los estados</option><option>Pagado</option><option>Pendiente</option></select>${puedeEditar ? `<button class="btn primary" onclick="goTo('pago-form.html')">+ Nuevo Pago</button>` : ''}</div>
+    <div class="grid three" style="margin-bottom:20px"><div class="card kpi success"><div class="kpi-icon">💵</div><div><p>Ingresos Totales</p><strong data-testid="kpi-ingresos-totales">${money(ingresos)}</strong></div></div><div class="card kpi warning"><div class="kpi-icon">💰</div><div><p>Pagos Pendientes</p><strong>${money(pendientes)}</strong></div></div><div class="card kpi"><div class="kpi-icon">#</div><div><p>Número de Transacciones</p><strong data-testid="kpi-num-transacciones">${pagos.length}</strong></div></div></div>
+    <div class="toolbar"><label class="search">🔎 <input id="q" placeholder="Buscar por mascota, dueño o concepto..."></label><select id="estado"><option>Todos los estados</option><option>Pagado</option><option>Pendiente</option></select>${puedeEditar ? `<button class="btn primary" data-testid="pagos-new-btn" onclick="goTo('pago-form.html')">+ Nuevo Pago</button>` : ''}</div>
     <div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Mascota</th><th>Dueño</th><th>Concepto</th><th>Monto</th><th>Método</th><th>Estado</th>${puedeEditar || puedeEliminar ? '<th>Acciones</th>' : ''}</tr></thead><tbody id="rows"></tbody></table></div>
     <div class="pagination" id="pager"></div>`);
 
@@ -452,8 +452,8 @@ async function renderInventario() {
   layout('../', `
     <div class="topbar"><div><h1>Gestión de Inventario</h1><p>Administra stock, productos veterinarios e indicadores de stock crítico.</p></div></div>
     <div class="grid three" style="margin-bottom:20px"><div class="card kpi"><div class="kpi-icon">📦</div><div><p>Total de Productos</p><strong>${inventario.length}</strong></div></div><div class="card kpi danger"><div class="kpi-icon">⚠️</div><div><p>Productos con Stock Bajo</p><strong>${low}</strong></div></div><div class="card kpi success"><div class="kpi-icon">💵</div><div><p>Valor Total del Inventario</p><strong>${money(total)}</strong></div></div></div>
-    <div class="toolbar"><label class="search">🔎 <input id="q" placeholder="Buscar producto..."></label><select id="categoria"><option>Todas las categorías</option><option>Alimento</option><option>Vacuna</option><option>Medicamento</option><option>Insumo</option></select><label class="btn ghost"><input type="checkbox" id="lowOnly"> Solo stock bajo</label><button class="btn primary" onclick="goTo('producto-form.html')">+ Nuevo Producto</button></div>
-    <div class="table-wrap"><table><thead><tr><th>Producto</th><th>Categoría</th><th>Cantidad</th><th>Stock Mínimo</th><th>Precio Unit.</th><th>Vencimiento</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="rows"></tbody></table></div>
+    <div class="toolbar"><label class="search">🔎 <input id="q" placeholder="Buscar producto..."></label><select id="categoria"><option>Todas las categorías</option><option>Alimento</option><option>Vacuna</option><option>Medicamento</option><option>Insumo</option></select><label class="btn ghost"><input type="checkbox" id="lowOnly" data-testid="inventario-lowstock-checkbox"> Solo stock bajo</label><button class="btn primary" onclick="goTo('producto-form.html')">+ Nuevo Producto</button></div>
+    <div class="table-wrap"><table><thead><tr><th>Producto</th><th>Categoría</th><th>Cantidad</th><th>Stock Mínimo</th><th>Precio Unit.</th><th>Vencimiento</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="rows" data-testid="inventario-rows"></tbody></table></div>
     <div class="pagination" id="pager"></div>`);
 
   let page = 1;
