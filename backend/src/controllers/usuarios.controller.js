@@ -11,7 +11,7 @@ async function listar(req, res) {
   try {
     const { rol, todos } = req.query;
     const params = [];
-    let sql = 'SELECT id, nombre, correo, rol, telefono, activo FROM usuarios WHERE 1=1';
+    let sql = 'SELECT id, nombre, correo, rol, telefono, direccion, activo, creado_en, actualizado_en FROM usuarios WHERE 1=1';
     if (!(todos && req.user.rol === 'admin')) sql += ' AND activo = true';
     if (rol) {
       params.push(rol);
@@ -31,7 +31,7 @@ const ROLES_VALIDOS = ['admin', 'veterinario', 'recepcionista', 'dueno_mascota']
 // POST /api/usuarios  (solo admin, validado en la ruta)
 async function crear(req, res) {
   try {
-    const { nombre, correo, password, rol, telefono } = req.body;
+    const { nombre, correo, password, rol, telefono, direccion } = req.body;
     if (!nombre || !correo || !password || !rol) {
       return res.status(400).json({ error: 'Nombre, correo, contraseña y rol son obligatorios.' });
     }
@@ -49,9 +49,9 @@ async function crear(req, res) {
 
     const hash = await bcrypt.hash(password, 10);
     const result = await pool.query(
-      `INSERT INTO usuarios (nombre, correo, password_hash, rol, telefono)
-       VALUES ($1,$2,$3,$4,$5) RETURNING id, nombre, correo, rol, telefono, activo`,
-      [nombre, correo, hash, rol, telefono || null]
+      `INSERT INTO usuarios (nombre, correo, password_hash, rol, telefono, direccion)
+       VALUES ($1,$2,$3,$4,$5,$6) RETURNING id, nombre, correo, rol, telefono, direccion, activo`,
+      [nombre, correo, hash, rol, telefono || null, direccion || null]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -65,7 +65,7 @@ async function crear(req, res) {
 async function actualizar(req, res) {
   try {
     const { id } = req.params;
-    const { nombre, correo, password, rol, telefono, activo } = req.body;
+    const { nombre, correo, password, rol, telefono, direccion, activo } = req.body;
 
     if (rol && !ROLES_VALIDOS.includes(rol)) {
       return res.status(400).json({ error: 'Rol inválido.' });
@@ -89,14 +89,15 @@ async function actualizar(req, res) {
     }
 
     const result = await pool.query(
-      `UPDATE usuarios SET nombre=$1, correo=$2, password_hash=$3, rol=$4, telefono=$5, activo=$6
-       WHERE id=$7 RETURNING id, nombre, correo, rol, telefono, activo`,
+      `UPDATE usuarios SET nombre=$1, correo=$2, password_hash=$3, rol=$4, telefono=$5, direccion=$6, activo=$7, actualizado_en=now()
+       WHERE id=$8 RETURNING id, nombre, correo, rol, telefono, direccion, activo, actualizado_en`,
       [
         nombre ?? actual.rows[0].nombre,
         correo ?? actual.rows[0].correo,
         passwordHash,
         rol ?? actual.rows[0].rol,
         telefono ?? actual.rows[0].telefono,
+        direccion ?? actual.rows[0].direccion,
         activo === undefined ? actual.rows[0].activo : (activo === true || activo === 'true'),
         id,
       ]
@@ -113,7 +114,7 @@ async function obtener(req, res) {
   try {
     const { id } = req.params;
     const result = await pool.query(
-      'SELECT id, nombre, correo, rol, telefono, activo FROM usuarios WHERE id=$1', [id]
+      'SELECT id, nombre, correo, rol, telefono, direccion, activo FROM usuarios WHERE id=$1', [id]
     );
     if (!result.rows[0]) return res.status(404).json({ error: 'Usuario no encontrado.' });
     res.json(result.rows[0]);

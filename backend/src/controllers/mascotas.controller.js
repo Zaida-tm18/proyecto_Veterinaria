@@ -15,7 +15,7 @@ async function listar(req, res) {
     const filtro = filtroDuenoSQL(req);
     const params = [];
     let sql = `
-      SELECT m.id, m.nombre, m.especie, m.raza, m.edad, m.dueno_id,
+      SELECT m.id, m.nombre, m.especie, m.raza, m.edad, m.dueno_id, m.foto_data, m.actualizado_en,
              u.nombre AS dueno, u.telefono
       FROM mascotas m
       JOIN usuarios u ON u.id = m.dueno_id
@@ -40,7 +40,7 @@ async function obtener(req, res) {
   try {
     const { id } = req.params;
     const result = await pool.query(
-      `SELECT m.id, m.nombre, m.especie, m.raza, m.edad, m.dueno_id,
+      `SELECT m.id, m.nombre, m.especie, m.raza, m.edad, m.dueno_id, m.foto_data, m.actualizado_en,
               u.nombre AS dueno, u.telefono, u.correo
        FROM mascotas m
        JOIN usuarios u ON u.id = m.dueno_id
@@ -66,9 +66,13 @@ async function obtener(req, res) {
 // dueno_mascota solo puede registrar mascotas para sí mismo.
 async function crear(req, res) {
   try {
-    const { nombre, especie, raza, edad, dueno_id } = req.body;
+    const { nombre, especie, raza, edad, dueno_id, foto_data } = req.body;
     if (!nombre || !especie) {
       return res.status(400).json({ error: 'Nombre y especie son obligatorios.' });
+    }
+    // Límite razonable para la foto en base64 (~4MB de imagen original).
+    if (foto_data && foto_data.length > 6_000_000) {
+      return res.status(400).json({ error: 'La imagen de la mascota es demasiado grande. Usa una imagen más liviana (máx. ~4MB).' });
     }
 
     let duenoFinal = dueno_id;
@@ -80,9 +84,9 @@ async function crear(req, res) {
     }
 
     const result = await pool.query(
-      `INSERT INTO mascotas (nombre, especie, raza, edad, dueno_id)
-       VALUES ($1,$2,$3,$4,$5) RETURNING *`,
-      [nombre, especie, raza || null, edad || null, duenoFinal]
+      `INSERT INTO mascotas (nombre, especie, raza, edad, dueno_id, foto_data)
+       VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`,
+      [nombre, especie, raza || null, edad || null, duenoFinal, foto_data || null]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -95,7 +99,11 @@ async function crear(req, res) {
 async function actualizar(req, res) {
   try {
     const { id } = req.params;
-    const { nombre, especie, raza, edad } = req.body;
+    const { nombre, especie, raza, edad, foto_data } = req.body;
+    // Límite razonable para la foto en base64 (~4MB de imagen original).
+    if (foto_data && foto_data.length > 6_000_000) {
+      return res.status(400).json({ error: 'La imagen de la mascota es demasiado grande. Usa una imagen más liviana (máx. ~4MB).' });
+    }
 
     const actual = await pool.query('SELECT * FROM mascotas WHERE id=$1 AND eliminado=false', [id]);
     if (!actual.rows[0]) return res.status(404).json({ error: 'Mascota no encontrada.' });
@@ -105,9 +113,9 @@ async function actualizar(req, res) {
     }
 
     const result = await pool.query(
-      `UPDATE mascotas SET nombre=$1, especie=$2, raza=$3, edad=$4
-       WHERE id=$5 RETURNING *`,
-      [nombre, especie, raza || null, edad || null, id]
+      `UPDATE mascotas SET nombre=$1, especie=$2, raza=$3, edad=$4, foto_data=$5, actualizado_en=now()
+       WHERE id=$6 RETURNING *`,
+      [nombre, especie, raza || null, edad || null, foto_data || null, id]
     );
     res.json(result.rows[0]);
   } catch (err) {

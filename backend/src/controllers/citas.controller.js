@@ -1,10 +1,11 @@
 const { pool } = require('../db');
+const { esFechaValida, esHoraValida, combinarFechaHora } = require('../utils/fechas');
 
 // GET /api/citas
 async function listar(req, res) {
   try {
     let sql = `
-      SELECT c.id, c.fecha, c.hora, c.motivo, c.estado, c.veterinario_id,
+      SELECT c.id, c.fecha, c.hora, c.motivo, c.estado, c.veterinario_id, c.actualizado_en,
              m.id AS mascota_id, m.nombre AS mascota, m.dueno_id,
              u.nombre AS dueno,
              v.nombre AS veterinario
@@ -30,13 +31,17 @@ async function listar(req, res) {
 }
 
 // GET /api/citas/:id
+// Incluye los tratamientos y pagos que salieron de esta cita: es la
+// "ficha de auditoría" de la visita (qué se diagnosticó, qué se cobró
+// y quién lo hizo).
 async function obtener(req, res) {
   try {
     const { id } = req.params;
     const result = await pool.query(
-      `SELECT c.*, m.nombre AS mascota, m.dueno_id, v.nombre AS veterinario
+      `SELECT c.*, m.nombre AS mascota, m.dueno_id, u.nombre AS dueno, v.nombre AS veterinario
        FROM citas c
        JOIN mascotas m ON m.id = c.mascota_id
+       JOIN usuarios u ON u.id = m.dueno_id
        LEFT JOIN usuarios v ON v.id = c.veterinario_id
        WHERE c.id = $1 AND c.eliminado = false`,
       [id]
@@ -46,7 +51,18 @@ async function obtener(req, res) {
     if (req.user.rol === 'dueno_mascota' && cita.dueno_id !== req.user.id) {
       return res.status(403).json({ error: 'No tienes acceso a esta cita.' });
     }
-    res.json(cita);
+
+    const [tratamientos, pagos] = await Promise.all([
+      pool.query('SELECT * FROM tratamientos WHERE cita_id=$1 AND eliminado=false ORDER BY id', [id]),
+      pool.query(
+        `SELECT p.*, e.nombre AS emitido_por FROM pagos p
+         JOIN usuarios e ON e.id = p.creado_por
+         WHERE p.cita_id=$1 AND p.eliminado=false ORDER BY p.id`,
+        [id]
+      ),
+    ]);
+
+    res.json({ ...cita, tratamientos: tratamientos.rows, pagos: pagos.rows });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Error al obtener la cita.' });
@@ -67,6 +83,12 @@ async function crear(req, res) {
     const { mascota_id, fecha, hora, motivo, veterinario_id, estado } = req.body;
     if (!mascota_id || !fecha || !hora || !motivo) {
       return res.status(400).json({ error: 'mascota_id, fecha, hora y motivo son obligatorios.' });
+    }
+    if (!esFechaValida(fecha)) return res.status(400).json({ error: 'La fecha de la cita no es válida.' });
+    if (!esHoraValida(hora)) return res.status(400).json({ error: 'La hora de la cita no es válida (usa el formato HH:MM).' });
+    const momentoCita = combinarFechaHora(fecha, hora);
+    if (momentoCita < new Date()) {
+      return res.status(400).json({ error: 'No puedes agendar una cita en una fecha y hora que ya pasaron.' });
     }
 
     const puede = await verificarPropiedadMascota(req, mascota_id);
@@ -95,6 +117,8 @@ async function actualizar(req, res) {
   try {
     const { id } = req.params;
     const { fecha, hora, motivo, veterinario_id, estado } = req.body;
+    if (!esFechaValida(fecha)) return res.status(400).json({ error: 'La fecha de la cita no es válida.' });
+    if (!esHoraValida(hora)) return res.status(400).json({ error: 'La hora de la cita no es válida (usa el formato HH:MM).' });
 
     const actual = await pool.query(
       `SELECT c.*, m.dueno_id FROM citas c JOIN mascotas m ON m.id=c.mascota_id
@@ -108,11 +132,20 @@ async function actualizar(req, res) {
     }
 
     // Un dueño puede reprogramar fecha/hora/motivo, pero no cambiar estado ni veterinario.
+    // Si de verdad está reprogramando (cambia fecha u hora), la nueva fecha/hora
+    // tampoco puede quedar en el pasado; si solo edita otros campos de una cita
+    // que ya pasó (ej. anotar el motivo real), no se le exige nada sobre la fecha.
+    const fechaActualISO = new Date(actual.rows[0].fecha).toISOString().slice(0, 10);
+    const cambiaFechaHora = fecha !== fechaActualISO || hora !== String(actual.rows[0].hora).slice(0, 5);
+    if (cambiaFechaHora && combinarFechaHora(fecha, hora) < new Date()) {
+      return res.status(400).json({ error: 'No puedes reprogramar la cita a una fecha y hora que ya pasaron.' });
+    }
+
     const nuevoEstado = esStaff ? (estado || actual.rows[0].estado) : actual.rows[0].estado;
     const nuevoVet = esStaff ? (veterinario_id ?? actual.rows[0].veterinario_id) : actual.rows[0].veterinario_id;
 
     const result = await pool.query(
-      `UPDATE citas SET fecha=$1, hora=$2, motivo=$3, veterinario_id=$4, estado=$5
+      `UPDATE citas SET fecha=$1, hora=$2, motivo=$3, veterinario_id=$4, estado=$5, actualizado_en=now()
        WHERE id=$6 RETURNING *`,
       [fecha, hora, motivo, nuevoVet, nuevoEstado, id]
     );
